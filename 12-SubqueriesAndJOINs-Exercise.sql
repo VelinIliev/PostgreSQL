@@ -71,7 +71,7 @@ JOIN customers c USING (customer_id)
 WHERE c.last_name = 'Hahn';
 
 -- 09. Total Sum of Nights
-
+-- TODO: Judge: 0/100
 SELECT a.name AS "name", SUM(b.booked_for) AS "sum"  FROM apartments AS a
 JOIN bookings b USING(apartment_id)
 GROUP BY a.name
@@ -123,7 +123,7 @@ LEFT JOIN mountains_countries mc on countries.country_code = mc.country_code
 WHERE mc.mountain_id ISNULL;
 
 -- 16. Monasteries by Country
-
+-- TODO: Judge: 0/100
 CREATE TABLE monasteries (
     id SERIAL PRIMARY KEY,
     monastery_name VARCHAR(255),
@@ -155,14 +155,14 @@ ALTER TABLE countries
 ADD COLUMN "three_rivers" BOOLEAN DEFAULT FALSE;
 
 UPDATE countries c
-SET three_rivers = FALSE
+SET three_rivers = FALSE;
 
 UPDATE countries
 SET three_rivers = true
     WHERE country_code IN (
         SELECT country_code FROM countries_rivers
         GROUP BY country_code
-        HAVING COUNT(*) <= 3
+        HAVING COUNT(*) > 3
              );
 
 SELECT
@@ -172,3 +172,61 @@ FROM monasteries AS m
 JOIN countries c on m.country_code = c.country_code
 WHERE c.three_rivers = true
 ORDER BY m.monastery_name;
+
+-- 17. Monasteries by Continents and Countries
+-- TODO: Judge: 0/100
+UPDATE countries
+SET country_name = 'Burma'
+WHERE country_name = 'Myanmar';
+
+INSERT INTO monasteries(monastery_name, country_code)
+VALUES ('Hanga Abbey', 'TZ');
+
+INSERT INTO monasteries(monastery_name, country_code)
+VALUES ('Myin-Tin-Daik', 'MM');
+
+SELECT
+    continent_name  AS "Continent Name",
+    country_name AS "Country Name",
+    COUNT(monasteries.country_code) AS "Monasteries Count"
+FROM countries
+LEFT JOIN monasteries USING (country_code)
+JOIN continents USING (continent_code)
+WHERE three_rivers = false
+GROUP BY country_name, continent_name
+ORDER BY "Monasteries Count" DESC, country_name;
+
+-- 18. Retrieving Information about Indexes
+
+SELECT tablename, indexname, indexdef
+FROM pg_indexes
+WHERE schemaname = 'public'
+ORDER BY tablename, indexname;
+
+-- 19. Continents and Currencies
+
+CREATE VIEW continent_currency_usage AS
+SELECT continent_code, currency_code, currency_usage
+FROM (
+    SELECT
+        continent_code,
+        currency_code,
+        DENSE_RANK() OVER (PARTITION BY "continent_code" ORDER BY currency_usage DESC) AS currency_rank,
+        currency_usage
+    FROM (
+        SELECT
+            continents.continent_code,
+            countries.currency_code,
+            COUNT(*) AS currency_usage
+        FROM countries
+        JOIN continents USING (continent_code)
+        GROUP BY continents.continent_code, countries.currency_code
+        HAVING COUNT(*) > 1
+    ) AS grouped_currencies
+) AS currencies_rank
+WHERE currency_rank = 1
+ORDER BY currency_usage DESC;
+
+-- 20. The Highest Peak in Each Country
+-- TODO: Not ready
+
