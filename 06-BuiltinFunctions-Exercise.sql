@@ -3,7 +3,7 @@
 CREATE OR REPLACE VIEW view_river_info AS
     SELECT 'The river' || ' ' || river_name || ' ' || 'flows into the' || ' ' || outflow || ' ' || 'and is' || ' ' || "length" || ' ' || 'kilometers long.' AS "River Information"
     FROM rivers
-    ORDER BY river_name
+    ORDER BY river_name;
 
 -- 02. Concatenate Geography Data
 CREATE OR REPLACE VIEW view_continents_countries_currencies_details AS
@@ -31,8 +31,8 @@ SELECT (regexp_matches("River Information", '([0-9]{1,4})'))[1] AS river_length 
 
 -- 06. Replace A
 SELECT
-    replace(mountain_range, 'a', '@') AS "replace_a",
-    replace(mountain_range, 'A', '$') AS "replace_A"
+    REPLACE(mountain_range, 'a', '@') AS "replace_a",
+    REPLACE(mountain_range, 'A', '$') AS "replace_A"
 FROM mountains;
 
 -- 07. Translate
@@ -48,11 +48,11 @@ SELECT continent_name, TRIM(continent_name) FROM continents;
 SELECT
     LTRIM(peak_name, 'M') AS "Left Trim" ,
     RTRIM(peak_name, 'm') AS "Right Trim"
-FROM peaks
+FROM peaks;
 
 -- 11. Character Length and Bits
 SELECT
-    mountain_range || ' ' || p.peak_name AS "Mountain Information" ,
+    CONCAT(mountain_range, ' ', p.peak_name) AS "Mountain Information" ,
     LENGTH(CONCAT(mountain_range, ' ', p.peak_name)) AS "Characters Length",
     BIT_LENGTH(CONCAT(mountain_range, ' ', p.peak_name)) AS "Bits of a String"
 FROM mountains
@@ -65,36 +65,21 @@ SELECT population, LENGTH(population::VARCHAR) FROM countries;
 -- 13. Positive and Negative LEFT
 SELECT
     peak_name,
-    SUBSTRING(peak_name, 1, 4) AS "Positive Left",
-    CASE
-        WHEN LENGTH(peak_name) >= 4 THEN LEFT(peak_name, LENGTH(peak_name) - 4)
-        ELSE ''
-    END AS "Negative Left"
+    LEFT(peak_name, 4) AS "Positive Left",
+    LEFT(peak_name, -4) AS "Negative Left"
 FROM peaks;
 
 -- 14. Positive and Negative RIGHT
 SELECT
     peak_name,
-    CASE
-        WHEN LENGTH(peak_name) >= 4
-            THEN substr(peak_name, LENGTH(peak_name) - 3)
-        ELSE peak_name
-    END AS "Positive Right",
-    CASE
-        WHEN LENGTH(peak_name) >= 4
-            THEN substr(peak_name, 5)
-        ELSE ''
-    END AS "Positive Right"
+    RIGHT(peak_name, 4) "Positive Right",
+    RIGHT(peak_name, -4) AS "Positive Right"
 FROM peaks;
 
 -- 15. Update iso_code
 UPDATE countries
-SET iso_code =
-    CASE
-        WHEN iso_code ISNULL
-            THEN UPPER(SUBSTRING(country_name, 1, 3))
-        ELSE iso_code
-    END;
+SET iso_code = UPPER(SUBSTRING(country_name, 1, 3))
+WHERE iso_code IS NULL;
 
 -- 16. REVERSE country_code
 UPDATE countries
@@ -106,16 +91,11 @@ WHERE elevation >= 4884;
 
 -- 18. Arithmetical Operators
 CREATE TABLE bookings_calculation AS
-SELECT booked_for FROM bookings
+SELECT booked_for,
+       booked_for::numeric * 50 AS "multiplication",
+       booked_for::numeric % 50 AS "modulo"
+FROM bookings
 WHERE apartment_id = 93;
-
-ALTER TABLE bookings_calculation
-ADD COLUMN multiplication NUMERIC,
-ADD COLUMN modulo NUMERIC;
-
-UPDATE bookings_calculation
-SET multiplication = booked_for * 50,
-    modulo = booked_for % 50;
 
 -- 19. ROUND vs TRUNC
 SELECT
@@ -134,49 +114,41 @@ ADD COLUMN billing_day TIMESTAMPTZ default CURRENT_TIMESTAMP;
 SELECT
     billing_day,
     TO_CHAR(billing_day, 'DD "Day" MM "Month" YYYY "Year" HH24:MI:SS') AS "Billing Day"
-FROM bookings
+FROM bookings;
 
 -- 22. EXTRACT Booked At
 SELECT
-    EXTRACT(YEAR FROM booked_at AT TIME ZONE 'UTC') AS "YEAR",
-    EXTRACT(MONTH FROM booked_at AT TIME ZONE 'UTC') AS "MONTH",
-    EXTRACT(DAY FROM booked_at AT TIME ZONE 'UTC') AS "DAY",
+    EXTRACT(YEAR FROM booked_at) AS "YEAR",
+    EXTRACT(MONTH FROM booked_at) AS "MONTH",
+    EXTRACT(DAY FROM booked_at) AS "DAY",
     EXTRACT(HOUR FROM booked_at AT TIME ZONE 'UTC') AS "HOUR",
-    EXTRACT(MINUTE FROM booked_at AT TIME ZONE 'UTC') AS "MINUTE",
-    CEILING(EXTRACT(SECOND FROM booked_at AT TIME ZONE 'UTC')) AS "SECOND"
+    EXTRACT(MINUTE FROM booked_at ) AS "MINUTE",
+    CEILING(EXTRACT(SECOND FROM booked_at)) AS "SECOND"
 FROM
     bookings;
 
 -- 23. Early Birds**
-ALTER TABLE bookings
-ADD COLUMN "Early Birds" bool default FALSE;
-
-UPDATE bookings
-SET "Early Birds" = true
-WHERE (DATE_PART('year', starts_at::date) - DATE_PART('year', booked_at::date)) * 12 +
-              (DATE_PART('month', starts_at::date) - DATE_PART('month', booked_at::date)) >= 10;
-
-SELECT user_id FROM bookings
-WHERE "Early Birds" = true;
+SELECT
+    user_id,
+    AGE(starts_at, booked_at) AS "Early Birds"
+FROM bookings
+WHERE starts_at - booked_at >= '10 MONTHS';
 
 -- 24. Match or Not
 SELECT companion_full_name, email FROM users
-WHERE LOWER(email) NOT LIKE '%@gmail' AND LOWER(companion_full_name) LIKE '%and%';
+WHERE email NOT LIKE '%@gmail' AND companion_full_name ILIKE '%and%';
 
 -- 25. COUNT by Initial
-ALTER TABLE users
-ADD COLUMN initials CHAR(2) DEFAULT null;
-
-UPDATE users
-SET initials = SUBSTRING(first_name, 1, 2);
-
-SELECT initials, COUNT(initials) FROM users
+SELECT
+    LEFT(first_name, 2) AS initials,
+    COUNT('initials') AS user_count
+FROM users
 GROUP BY initials
-ORDER BY count(initials) DESC, initials;
+ORDER BY user_count DESC, initials;
 
 -- 26. SUM
 SELECT SUM(booked_for) FROM bookings
-WHERE apartment_id = 90
+WHERE apartment_id = 90;
 
 -- 27. Average Value
-SELECT AVG(multiplication) FROM bookings_calculation
+SELECT AVG(multiplication) FROM bookings_calculation;
