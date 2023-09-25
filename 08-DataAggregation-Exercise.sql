@@ -14,12 +14,17 @@ SELECT MIN(deposit_charge) FROM wizard_deposits;
 SELECT MAX(age) FROM wizard_deposits;
 
 -- 06. GROUP BY Deposit Interest
-SELECT deposit_group, SUM(deposit_interest) AS "Deposit Interest" FROM wizard_deposits
+SELECT
+    deposit_group,
+    SUM(deposit_interest) AS "Deposit Interest"
+FROM wizard_deposits
 GROUP BY deposit_group
 ORDER BY "Deposit Interest" DESC;
 
 -- 07. LIMIT the Magic Wand Creator
-SELECT magic_wand_creator, MIN(magic_wand_size) AS "Minimum Wand Size" FROM wizard_deposits
+SELECT magic_wand_creator,
+       MIN(magic_wand_size) AS "Minimum Wand Size"
+FROM wizard_deposits
 GROUP BY magic_wand_creator
 ORDER BY "Minimum Wand Size"
 LIMIT 5;
@@ -35,14 +40,17 @@ GROUP BY deposit_group, is_deposit_expired
 ORDER BY deposit_group DESC , is_deposit_expired;
 
 -- 09. Notes with Dumbledore
-SELECT last_name, COUNT(notes) AS "Notes with Dumbledore" FROM wizard_deposits
+SELECT
+    last_name,
+    COUNT(notes) AS "Notes with Dumbledore"
+FROM wizard_deposits
 WHERE notes LIKE '%Dumbledore%'
 GROUP BY last_name;
 
 -- 10. Wizard View
 CREATE OR REPLACE VIEW view_wizard_deposits_with_expiration_date_before_1983_08_17 AS
 SELECT
-    first_name || ' ' || last_name AS "Wizard Name",
+    CONCAT(first_name, ' ', last_name)AS "Wizard Name",
     deposit_start_date AS "Start Date",
     deposit_expiration_date AS "Expiration Date",
     deposit_amount AS "Amount"
@@ -52,7 +60,10 @@ GROUP BY "Wizard Name", "Start Date", "Expiration Date", "Amount"
 ORDER BY "Expiration Date";
 
 -- 11. Filter Max Deposit
-SELECT magic_wand_creator, MAX(deposit_amount) AS "Max Deposit Amount" FROM wizard_deposits
+SELECT
+    magic_wand_creator,
+    MAX(deposit_amount) AS "Max Deposit Amount"
+FROM wizard_deposits
 GROUP BY magic_wand_creator
 HAVING MAX(deposit_amount) < 20000 OR MAX(deposit_amount) > 40000
 ORDER BY "Max Deposit Amount" DESC
@@ -91,15 +102,14 @@ UPDATE employees
 SET salary =
     CASE
         WHEN hire_date < '2015-01-16' THEN salary + 2500
-        WHEN hire_date < '2020-03-04' THEN salary + 1500
-        ELSE salary
+        ELSE salary + 1500
     END,
     job_title =
     CASE
         WHEN hire_date < '2015-01-16' THEN 'Senior ' || job_title
-        WHEN hire_date < '2020-03-04' THEN 'Mid-' || job_title
-        ELSE job_title
-    END;
+        ELSE 'Mid-' || job_title
+    END
+WHERE hire_date < '2020-03-04';
 
 -- 15. Categorizes Salary
 SELECT
@@ -117,7 +127,7 @@ ORDER BY "Category", job_title;
 SELECT
     project_name,
     CASE
-        WHEN start_date IS NOT NULL AND end_date ISNULL THEN 'In Progress'
+        WHEN start_date NOTNULL AND end_date ISNULL THEN 'In Progress'
         WHEN start_date ISNULL OR end_date ISNULL THEN 'Ready for development'
         ELSE 'Done'
     END AS "project_status"
@@ -146,8 +156,11 @@ SELECT
     salary,
     department_id,
     CASE
-        WHEN salary >= 25000 AND job_title LIKE 'Senior%' THEN 'High-performing Senior'
-        WHEN salary >= 25000 AND job_title NOT LIKE 'Senior%' THEN 'High-performing Employee'
+        WHEN salary >= 25000 THEN
+            CASE
+                WHEN job_title LIKE 'Senior%' THEN 'High-performing Senior'
+                ELSE 'High-performing Employee'
+            END
         ELSE 'Average-performing'
     END AS "performance_rating"
 FROM employees;
