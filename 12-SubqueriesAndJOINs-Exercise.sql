@@ -4,7 +4,7 @@ SELECT
     b.booked_for AS "Nights"
 FROM apartments
 JOIN bookings b on b.booking_id = apartments.booking_id
-ORDER BY apartments.apartment_id ASC;
+ORDER BY apartments.apartment_id;
 
 -- 02. First 10 Apartments Booked At
 
@@ -37,7 +37,7 @@ SELECT
 FROM bookings AS b
 FULL JOIN apartments a on b.booking_id = a.booking_id
 FULL JOIN customers c on c.customer_id = b.customer_id
-ORDER BY "Booking ID", "Apartment Owner", "Customer Name"
+ORDER BY "Booking ID", "Apartment Owner", "Customer Name";
 
 -- 5. Multiplication of Information**
 
@@ -72,10 +72,22 @@ WHERE c.last_name = 'Hahn';
 
 -- 09. Total Sum of Nights
 -- TODO: Judge: 0/100
-SELECT a.name AS "name", SUM(b.booked_for) AS "sum"  FROM apartments AS a
+SELECT
+    a.name AS "name",
+    SUM(b.booked_for) AS "sum"
+FROM apartments AS a
 JOIN bookings b USING(apartment_id)
 GROUP BY a.name
 ORDER BY a.name;
+
+SELECT
+    a.name,
+    SUM(b.booked_for)
+FROM bookings AS b
+JOIN apartments a USING (apartment_id)
+GROUP BY a.name
+ORDER BY a.name;
+
 
 -- 10. Popular Vacation Destination
 
@@ -106,7 +118,7 @@ SELECT c.country_name, r.river_name FROM countries AS c
 LEFT JOIN countries_rivers cr on c.country_code = cr.country_code
 LEFT JOIN rivers r on r.id = cr.river_id
 WHERE c.continent_code = 'AF'
-ORDER BY c.country_name ASC
+ORDER BY c.country_name
 LIMIT 5;
 
 -- 14. Minimum Average Area Across Continents
@@ -123,8 +135,8 @@ LEFT JOIN mountains_countries mc on countries.country_code = mc.country_code
 WHERE mc.mountain_id ISNULL;
 
 -- 16. Monasteries by Country
--- TODO: Judge: 0/100
-CREATE TABLE monasteries (
+
+CREATE TABLE monasteries(
     id SERIAL PRIMARY KEY,
     monastery_name VARCHAR(255),
     country_code CHAR(2)
@@ -132,9 +144,9 @@ CREATE TABLE monasteries (
 
 INSERT INTO monasteries(monastery_name, country_code)
 VALUES
-    ('Rila Monastery “St. Ivan of Rila”', 'BG'),
-    ('Bachkovo Monastery “Virgin Mary”', 'BG'),
-    ('Troyan Monastery “Holy Mother''s Assumption”', 'BG'),
+    ('Rila Monastery "St. Ivan of Rila"', 'BG'),
+    ('Bachkovo Monastery "Virgin Mary"', 'BG'),
+    ('Troyan Monastery "Holy Mother''s Assumption"', 'BG'),
     ('Kopan Monastery', 'NP'),
     ('Thrangu Tashi Yangtse Monastery', 'NP'),
     ('Shechen Tennyi Dargyeling Monastery', 'NP'),
@@ -151,50 +163,47 @@ VALUES
     ('Taktsang Palphug Monastery', 'BT'),
     ('Sümela Monastery', 'TR');
 
-ALTER TABLE countries
-ADD COLUMN "three_rivers" BOOLEAN DEFAULT FALSE;
 
-UPDATE countries c
-SET three_rivers = FALSE;
+ALTER TABLE countries
+ADD COLUMN three_rivers BOOLEAN DEFAULT FALSE;
 
 UPDATE countries
 SET three_rivers = true
-    WHERE country_code IN (
-        SELECT country_code FROM countries_rivers
-        GROUP BY country_code
-        HAVING COUNT(*) > 3
-             );
+WHERE country_code IN (
+    SELECT c.country_code FROM countries_rivers
+    JOIN countries c USING(country_code)
+    group by c.country_code
+    HAVING count(*) > 3);
 
 SELECT
-    m.monastery_name AS "Monastery",
+    monastery_name AS "Monastery",
     c.country_name AS "Country"
-FROM monasteries AS m
-JOIN countries c on m.country_code = c.country_code
-WHERE c.three_rivers = true
-ORDER BY m.monastery_name;
+FROM monasteries
+JOIN countries c on monasteries.country_code = c.country_code
+WHERE c.three_rivers = false
+ORDER BY monastery_name;
 
 -- 17. Monasteries by Continents and Countries
--- TODO: Judge: 0/100
+
 UPDATE countries
 SET country_name = 'Burma'
 WHERE country_name = 'Myanmar';
 
 INSERT INTO monasteries(monastery_name, country_code)
-VALUES ('Hanga Abbey', 'TZ');
-
-INSERT INTO monasteries(monastery_name, country_code)
-VALUES ('Myin-Tin-Daik', 'MM');
+VALUES
+    ('Hanga Abbey', (SELECT country_code from countries WHERE country_name = 'Tanzania')),
+    ('Myin-Tin-Daik', (SELECT country_code from countries WHERE country_name = 'Myanmar'));
 
 SELECT
-    continent_name  AS "Continent Name",
-    country_name AS "Country Name",
-    COUNT(monasteries.country_code) AS "Monasteries Count"
-FROM countries
-LEFT JOIN monasteries USING (country_code)
-JOIN continents USING (continent_code)
+    con.continent_name AS "Continent Name",
+    coun.country_name AS "Country Name",
+    COUNT(mon.country_code) AS "Monasteries Count"
+from monasteries AS mon
+RIGHT JOIN countries coun USING (country_code)
+JOIN continents con USING (continent_code)
 WHERE three_rivers = false
-GROUP BY country_name, continent_name
-ORDER BY "Monasteries Count" DESC, country_name;
+GROUP BY coun.country_name, con.continent_name
+ORDER BY "Monasteries Count" DESC, coun.country_name;
 
 -- 18. Retrieving Information about Indexes
 
@@ -229,4 +238,8 @@ ORDER BY currency_usage DESC;
 
 -- 20. The Highest Peak in Each Country
 -- TODO: Not ready
+
+--
+
+
 
