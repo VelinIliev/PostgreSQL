@@ -43,10 +43,9 @@ SELECT
     e.salary,
     e.department_id,
     CASE
-        WHEN e.department_id = 1 THEN 'Management'
-        WHEN e.department_id = 2 THEN 'Kitchen Staff'
-        WHEN e.department_id = 3 THEN 'Service Staff'
+        WHEN e.department_id <= 3 THEN d.name
         ELSE 'Other'
     END AS department_name
 FROM employees AS e
+JOIN departments d on d.id = e.department_id;
 
