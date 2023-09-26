@@ -17,9 +17,9 @@ CREATE TABLE peaks (
 SELECT
     driver_id,
     vehicle_type,
-    c.first_name || ' ' || c.last_name AS "driver_name"
+    CONCAT(c.first_name, ' ', c.last_name) AS "driver_name"
 FROM vehicles
-JOIN campers c on vehicles.driver_id = c.id;
+JOIN campers c ON vehicles.driver_id = c.id;
 
 -- 3. SoftUni Hiking
 SELECT
@@ -31,6 +31,10 @@ FROM routes
 JOIN campers c on c.id = routes.leader_id;
 
 -- 4. Delete Mountains
+
+-- DROP TABLE peaks;
+-- DROP TABLE mountains;
+
 CREATE TABLE mountains (
     id SERIAL PRIMARY KEY,
     name VARCHAR(50) NOT NULL
