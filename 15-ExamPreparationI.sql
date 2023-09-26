@@ -201,22 +201,22 @@ BEGIN
 END
 $$ ;
 
-CREATE OR REPLACE PROCEDURE sp_animals_with_owners_or_not_1 (animal_name VARCHAR(30))
-LANGUAGE plpgsql
-AS $$
-DECLARE result VARCHAR;
-BEGIN
-    SELECT
-        CASE
-            WHEN o.name ISNULL THEN 'For adoption'
-            ELSE o.name
-        END
-    INTO result FROM animals AS a
-    LEFT JOIN owners o on a.owner_id = o.id
-    WHERE a.name ILIKE animal_name;
-    RAISE NOTICE '%', result;
-END
-$$ ;
+-- CREATE OR REPLACE PROCEDURE sp_animals_with_owners_or_not_1 (animal_name VARCHAR(30))
+-- LANGUAGE plpgsql
+-- AS $$
+-- DECLARE result VARCHAR;
+-- BEGIN
+--     SELECT
+--         CASE
+--             WHEN o.name ISNULL THEN 'For adoption'
+--             ELSE o.name
+--         END
+--     INTO result FROM animals AS a
+--     LEFT JOIN owners o on a.owner_id = o.id
+--     WHERE a.name ILIKE animal_name;
+--     RAISE NOTICE '%', result;
+-- END
+-- $$ ;
 
 CALL sp_animals_with_owners_or_not_1('Pumpkinseed Sunfish');
 CALL sp_animals_with_owners_or_not_1('Hippo', '');
