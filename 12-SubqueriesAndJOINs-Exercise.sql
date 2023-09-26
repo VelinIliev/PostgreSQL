@@ -238,30 +238,27 @@ ORDER BY currency_usage DESC;
 
 -- 20. The Highest Peak in Each Country
 
-SELECT DISTINCT ON("Country")
-    "Country",
-    "Highest Peak Name",
-    "Highest Peak Elevation",
-    "Mountain"
-FROM (
+WITH row_number AS (
     SELECT
-    coun.country_name AS "Country",
-    CASE
-        WHEN p.peak_name ISNULL THEN '(no highest peak)'
-        ELSE p.peak_name
-    END AS "Highest Peak Name",
-    CASE
-        WHEN p.elevation ISNULL THEN 0
-        ELSE p.elevation
-    END AS "Highest Peak Elevation",
-    CASE
-        WHEN m.mountain_range IS NULL THEN '(no mountain)'
-        ELSE m.mountain_range
-    END AS "Mountain"
+        coun.country_name AS "Country",
+        COALESCE(p.peak_name, '(no highest peak)') AS "Highest Peak Name",
+        COALESCE(p.elevation, 0) AS "Highest Peak Elevation",
+        COALESCE(m.mountain_range, '(no mountain)') AS "Mountain",
+        ROW_NUMBER ()
+            OVER (
+                PARTITION BY country_name
+                ORDER BY p.elevation DESC
+            ) AS "rank"
     FROM countries AS coun
     LEFT JOIN mountains_countries mc on coun.country_code = mc.country_code
     LEFT JOIN mountains m on mc.mountain_id = m.id
     LEFT JOIN peaks p on m.id = p.mountain_id
     ORDER BY "Country", "Highest Peak Elevation" DESC
-     ) AS "Order by cuontry and elevation"
-ORDER BY "Country", "Highest Peak Elevation" DESC;
+)
+SELECT
+    "Country",
+    "Highest Peak Name",
+    "Highest Peak Elevation",
+    "Mountain"
+FROM row_number
+WHERE "rank" = 1;
