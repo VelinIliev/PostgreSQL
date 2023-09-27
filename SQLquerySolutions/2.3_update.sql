@@ -1,6 +1,16 @@
 UPDATE 
-	animals
+	players_ranges
 SET 
-	owner_id = 4
+	max_players = max_players + 1
 WHERE 
-	owner_id IS NULL;
+	min_players = 2 
+	AND 
+	max_players = 2;
+
+
+UPDATE 
+	board_games
+SET 
+	"name" = "name" || ' V2'
+WHERE 
+	release_year >= 2020;

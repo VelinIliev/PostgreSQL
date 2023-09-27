@@ -1,9 +1,22 @@
 -- Delete records from referencing tables first
-DELETE FROM volunteers
-WHERE department_id = 2;
+DELETE FROM board_games
+WHERE publisher_id IN (
+    SELECT id
+    FROM publishers
+    WHERE address_id IN (
+        SELECT id
+        FROM addresses
+        WHERE town LIKE 'L%'
+    )
+);
 
+DELETE FROM publishers
+WHERE address_id IN (
+    SELECT id
+    FROM addresses
+    WHERE town LIKE 'L%'
+);
 
--- Delete records from volunteers_departments table
-DELETE FROM volunteers_departments
-WHERE "id" = 2
-RETURNING *;
+-- Delete records from addresses table
+DELETE FROM addresses
+WHERE town LIKE 'L%';
