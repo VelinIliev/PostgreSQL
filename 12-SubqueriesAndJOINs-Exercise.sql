@@ -71,22 +71,11 @@ JOIN customers c USING (customer_id)
 WHERE c.last_name = 'Hahn';
 
 -- 09. Total Sum of Nights
--- TODO: Judge: 0/100
-SELECT
-    a.name AS "name",
-    SUM(b.booked_for) AS "sum"
-FROM apartments AS a
-JOIN bookings b USING(apartment_id)
-GROUP BY a.name
-ORDER BY a.name;
 
-SELECT
-    a.name,
-    SUM(b.booked_for)
-FROM bookings AS b
-JOIN apartments a USING (apartment_id)
+SELECT a.name, SUM(booked_for) FROM bookings AS b
+JOIN apartments a on a.apartment_id = b.apartment_id
 GROUP BY a.name
-ORDER BY a.name;
+ORDER BY a.name
 
 
 -- 10. Popular Vacation Destination
