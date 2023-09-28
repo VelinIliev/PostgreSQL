@@ -184,7 +184,7 @@ SELECT fn_get_volunteers_count_from_department('Zoo events');
 -- 4.12. Animals with Owner or Not
 
 
-CREATE OR REPLACE PROCEDURE sp_animals_with_owners_or_not_1 (
+CREATE OR REPLACE PROCEDURE sp_animals_with_owners_or_not (
     IN animal_name VARCHAR(30),
 	OUT result TEXT )
 LANGUAGE plpgsql
@@ -201,7 +201,7 @@ BEGIN
 END
 $$ ;
 
--- CREATE OR REPLACE PROCEDURE sp_animals_with_owners_or_not_1 (animal_name VARCHAR(30))
+-- CREATE OR REPLACE PROCEDURE sp_animals_with_owners_or_not (animal_name VARCHAR(30))
 -- LANGUAGE plpgsql
 -- AS $$
 -- DECLARE result VARCHAR;
