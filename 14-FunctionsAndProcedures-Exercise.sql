@@ -80,15 +80,6 @@ SELECT fn_is_game_over(true);
 SELECT fn_is_game_over(false);
 
 -- 05. Difficulty Level
--- Write a PostgreSQL function that accepts a "level" parameter and returns the
--- corresponding "difficulty_level" based on the following criteria:
--- 	if "level" is less than or equal to 40, the "difficulty_level" is "Normal Difficulty";
--- 	if "level" is between 41 and 60 (inclusive), the "difficulty_level" is "Nightmare Difficulty";
--- 	if "level" is greater than 60, the "difficulty_level" is "Hell Difficulty".
--- Next, write a SQL query that retrieves the "user_id", "level", "cash",
--- and "difficulty_level" of all users in the "users_games" table.
--- Use the "fn_difficulty_level()" function to calculate the difficulty
--- level for each user. Sort the result by "user_id" in ascending order.
 
 CREATE OR REPLACE FUNCTION fn_difficulty_level(level INT)
 RETURNS VARCHAR(50) AS $$
@@ -186,7 +177,7 @@ SELECT * FROM accounts
 WHERE id = 1;
 
 -- 10. Money Transfer
--- TODO: NOT WORKING PROPERLY, BUT IN Judge 100/100
+
 CREATE OR REPLACE PROCEDURE sp_transfer_money(
     sender_id INT,
     receiver_id INT,
@@ -228,10 +219,11 @@ SELECT * FROM accounts
 WHERE id IN (1,2);
 
 -- 11. Delete Procedure
+
 DROP PROCEDURE IF EXISTS sp_retrieving_holders_with_balance_higher_than;
 
 -- 12. Log Accounts Trigger
--- TODO: Judge 66/100
+
 CREATE TABLE logs (
     id SERIAL PRIMARY KEY,
     account_id INT,
@@ -248,7 +240,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER account_balance_change
+CREATE TRIGGER tr_account_balance_change
 AFTER UPDATE OF balance ON accounts
 FOR EACH ROW
 WHEN (OLD.balance IS DISTINCT FROM NEW.balance)
@@ -256,7 +248,7 @@ EXECUTE FUNCTION trigger_fn_insert_new_entry_into_logs();
 
 CALL sp_deposit_money(1, 0);
 CALL sp_withdraw_money(1, 120);
-SELECT * FROM accounts
+SELECT * FROM logs
 WHERE id  = 1 ;
 
 -- 13. Notification Email on Balance Change
