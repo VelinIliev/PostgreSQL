@@ -51,10 +51,6 @@ ORDER BY "Customer Name";
 -- 06. Unassigned Apartments
 
 SELECT b.booking_id, b.apartment_id, c.companion_full_name FROM bookings AS b
-JOIN customers c on c.customer_id = b.customer_id
-WHERE b.apartment_id ISNULL;
-
-SELECT b.booking_id, b.apartment_id, c.companion_full_name FROM bookings AS b
 JOIN customers c USING(customer_id)
 WHERE b.apartment_id ISNULL;
 
@@ -75,28 +71,42 @@ WHERE c.last_name = 'Hahn';
 SELECT a.name, SUM(booked_for) FROM bookings AS b
 JOIN apartments a on a.apartment_id = b.apartment_id
 GROUP BY a.name
-ORDER BY a.name
+ORDER BY a.name;
 
 
 -- 10. Popular Vacation Destination
 
-SELECT a.country, COUNT(*) AS "booking_count" FROM apartments a
+SELECT
+    a.country,
+    COUNT(*) AS "booking_count"
+FROM apartments a
 JOIN bookings b USING(apartment_id)
-WHERE b.booked_at > '2021-05-18 07:52:09.904+03' AND b.booked_at < '2021-09-17 19:48:02.147+03'
+WHERE
+    b.booked_at > '2021-05-18 07:52:09.904+03'
+        AND
+    b.booked_at < '2021-09-17 19:48:02.147+03'
 GROUP BY a.country
 ORDER BY "booking_count" DESC;
 
 -- 11. Bulgaria's Peaks Higher than 2835 Meters
 
-SELECT mc.country_code, m.mountain_range, p.peak_name, p.elevation  FROM peaks AS p
-JOIN mountains m on p.mountain_id = m.id
-JOIN mountains_countries mc on m.id = mc.mountain_id
+SELECT
+    mc.country_code,
+    m.mountain_range,
+    p.peak_name,
+    p.elevation
+FROM peaks AS p
+JOIN mountains m ON p.mountain_id = m.id
+JOIN mountains_countries mc ON m.id = mc.mountain_id
 WHERE p.elevation > 2835 AND mc.country_code = 'BG'
 ORDER BY p.elevation DESC ;
 
 -- 12. Count Mountain Ranges
 
-SELECT country_code, count(*) AS "mountain_range_count" FROM mountains_countries
+SELECT
+    country_code,
+    count(*) AS "mountain_range_count"
+FROM mountains_countries
 WHERE country_code IN ('US', 'RU', 'BG')
 GROUP BY country_code
 ORDER BY "mountain_range_count" DESC ;
@@ -112,15 +122,19 @@ LIMIT 5;
 
 -- 14. Minimum Average Area Across Continents
 
-SELECT AVG(area_in_sq_km) AS "min_average_area" FROM countries
+SELECT
+    AVG(area_in_sq_km) AS "min_average_area"
+FROM countries
 GROUP BY continent_code
 ORDER BY "min_average_area"
 LIMIT 1;
 
 -- 15. Countries Without Any Mountains
 
-SELECT COUNT(*) AS "countries_without_mountains" FROM countries
-LEFT JOIN mountains_countries mc on countries.country_code = mc.country_code
+SELECT
+    COUNT(*) AS "countries_without_mountains"
+FROM countries
+LEFT JOIN mountains_countries mc ON countries.country_code = mc.country_code
 WHERE mc.mountain_id ISNULL;
 
 -- 16. Monasteries by Country
@@ -161,7 +175,7 @@ SET three_rivers = true
 WHERE country_code IN (
     SELECT c.country_code FROM countries_rivers
     JOIN countries c USING(country_code)
-    group by c.country_code
+    GROUP BY c.country_code
     HAVING count(*) > 3);
 
 SELECT
@@ -180,14 +194,14 @@ WHERE country_name = 'Myanmar';
 
 INSERT INTO monasteries(monastery_name, country_code)
 VALUES
-    ('Hanga Abbey', (SELECT country_code from countries WHERE country_name = 'Tanzania')),
-    ('Myin-Tin-Daik', (SELECT country_code from countries WHERE country_name = 'Myanmar'));
+    ('Hanga Abbey', (SELECT country_code FROM countries WHERE country_name = 'Tanzania')),
+    ('Myin-Tin-Daik', (SELECT country_code FROM countries WHERE country_name = 'Myanmar'));
 
 SELECT
     con.continent_name AS "Continent Name",
     coun.country_name AS "Country Name",
     COUNT(mon.country_code) AS "Monasteries Count"
-from monasteries AS mon
+FROM monasteries AS mon
 RIGHT JOIN countries coun USING (country_code)
 JOIN continents con USING (continent_code)
 WHERE three_rivers = false
@@ -209,7 +223,10 @@ FROM (
     SELECT
         continent_code,
         currency_code,
-        DENSE_RANK() OVER (PARTITION BY "continent_code" ORDER BY currency_usage DESC) AS currency_rank,
+        DENSE_RANK() OVER (
+            PARTITION BY "continent_code"
+            ORDER BY currency_usage DESC
+            ) AS currency_rank,
         currency_usage
     FROM (
         SELECT
