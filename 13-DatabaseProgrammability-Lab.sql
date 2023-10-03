@@ -5,12 +5,12 @@ RETURNS INT
 AS $$
 DECLARE employees_count_by_town INT;
 BEGIN
-SELECT COUNT(employee_id) INTO employees_count_by_town
-FROM employees
-JOIN addresses USING (address_id)
-JOIN towns USING(town_id)
-WHERE towns.name = town_name;
-RETURN employees_count_by_town;
+    SELECT COUNT(employee_id) INTO employees_count_by_town
+    FROM employees
+    JOIN addresses USING (address_id)
+    JOIN towns USING(town_id)
+    WHERE towns.name = town_name;
+    RETURN employees_count_by_town;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -20,17 +20,29 @@ SELECT fn_count_employees_by_town(NULL) AS count;
 
 -- 02. Employees Promotion
 
-CREATE OR REPLACE PROCEDURE sp_increase_salaries(department_name VARCHAR(50))
-LANGUAGE plpgsql
-AS $$
-BEGIN
-    UPDATE employees AS e
-    SET salary = salary * 1.05
-    WHERE e.department_id = (
-    SELECT department_id FROM departments WHERE name = department_name);
-END; $$;
+CREATE OR REPLACE PROCEDURE
+    sp_increase_salaries(department_name VARCHAR(50))
+AS
+$$
+    BEGIN
+        UPDATE employees AS e
+        SET salary = salary * 1.05
+        WHERE e.department_id = (
+            SELECT department_id
+            FROM departments
+            WHERE name = department_name
+            );
+    END;
+$$ LANGUAGE plpgsql;
 
 CALL sp_increase_salaries('Finance');
+SELECT first_name, salary FROM employees
+WHERE department_id = (
+    SELECT department_id
+    FROM departments
+    WHERE name = 'Finance'
+    )
+ORDER BY first_name;
 
 -- 03. Employees Promotion By ID
 
@@ -48,7 +60,10 @@ BEGIN
     END IF;
 END; $$;
 
+
 CALL sp_increase_salary_by_id(17);
+SELECT first_name, salary FROM employees
+WHERE employee_id = 17;
 
 -- 04. Triggered
 
