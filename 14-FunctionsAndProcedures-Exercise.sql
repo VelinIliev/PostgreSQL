@@ -99,7 +99,7 @@ SELECT
     ug.cash,
     fn_difficulty_level(ug.level) AS difficulty_level
 FROM users_games ug
-ORDER BY ug.user_id ASC;
+ORDER BY ug.user_id;
 
 -- 06. Cash in User Games Odd Rows
 
